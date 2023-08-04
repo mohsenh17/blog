@@ -14,8 +14,13 @@
         {% endif %}
         {% endwith %}
         <a href="{{ url_for('index') }}">Home</a>
+        {% if current_user.is_anonymous %}
         <a href="{{ url_for('login') }}">Login</a>
-        <h1>Hello, {{ user.username }}!</h1>
+        {% else %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
+        <h1>Hello, {{ current_user.username }}!</h1>
+        <h1>you joint in, {{ current_user.joinDate }}!</h1>
         {% for post in posts %}
         <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
         {% endfor %}
