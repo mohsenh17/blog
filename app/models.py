@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     privacy = db.Column(db.Boolean, unique=False, default=True) # by default the user is private
     password_hash = db.Column(db.String(128))
     joinDate = db.Column(db.DateTime, index=True, default=datetime.utcnow().date()) #user's joining date
+    profile_pic = db.Column(db.String(120), default='default_profilePic.jpg')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -24,6 +25,7 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+    
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)

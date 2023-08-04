@@ -1,0 +1,13 @@
+<table>
+    <tr valign="top">
+        <td><img src="{{ user_profilePic }}"></td>
+        <td><h1>User: {{ user.username }}</h1></td>
+        <td><h1>join in: {{ user.joinDate }}</h1></td>
+    </tr>
+</table>
+<hr>
+{% for post in posts %}
+<p>
+{{ post.author.username }} says: <b>{{ post.body }}</b>
+</p>
+{% endfor %}
