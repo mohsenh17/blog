@@ -76,7 +76,6 @@ def save_profile_pic(form_profile_pic):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_profile_pic.filename)
     profile_pic_fn = random_hex+ f_ext
-    print(app.root_path)
     profile_pic_path = os.path.join(app.root_path,'static/profile_pics', profile_pic_fn)
     #form_profile_pic.save(profile_pic_path)
     output_size = (125, 125)
@@ -85,6 +84,13 @@ def save_profile_pic(form_profile_pic):
     i.save(profile_pic_path)
     return profile_pic_fn
 
+def remove_profile_pic(profile_pic_fn):
+    profile_pic_path = os.path.join(app.root_path,'static/profile_pics', profile_pic_fn)
+    print(profile_pic_path)
+    if os.path.isfile(profile_pic_path):
+        #os.system("rm {}".format(profile_pic_path)) linux
+        os.remove(profile_pic_path)
+
 @app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
@@ -92,6 +98,7 @@ def account():
     user_profilePic = url_for('static', filename='profile_pics/'+current_user.profile_pic)
     if form.validate_on_submit():
         if form.profile_pic.data:
+            remove_profile_pic(current_user.profile_pic)
             profile_pic_fileName=save_profile_pic(form.profile_pic.data)
             current_user.profile_pic = profile_pic_fileName
         db.session.commit()
