@@ -1,10 +1,12 @@
+import os
 from flask import render_template, flash, redirect, url_for, request
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm
-
+from app.forms import LoginForm, RegistrationForm, UpdateAcountForm
+import secrets
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User
+from PIL import Image
 
 @app.route('/')
 @app.route('/index')
@@ -67,5 +69,31 @@ def user(username):
         {'author': user, 'body': 'Test post #2'}
     ]
     print(user.profile_pic)
-    user_profilePic = url_for('static', filename='profile_pic/'+user.profile_pic)
+    user_profilePic = url_for('static', filename='profile_pics/'+user.profile_pic)
     return render_template('user.html', user=user, posts=posts, user_profilePic=user_profilePic)
+
+def save_profile_pic(form_profile_pic):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_profile_pic.filename)
+    profile_pic_fn = random_hex+ f_ext
+    print(app.root_path)
+    profile_pic_path = os.path.join(app.root_path,'static/profile_pics', profile_pic_fn)
+    #form_profile_pic.save(profile_pic_path)
+    output_size = (125, 125)
+    i = Image.open(form_profile_pic)
+    i.thumbnail(output_size)
+    i.save(profile_pic_path)
+    return profile_pic_fn
+
+@app.route('/account', methods=['GET', 'POST'])
+@login_required
+def account():
+    form = UpdateAcountForm()
+    user_profilePic = url_for('static', filename='profile_pics/'+current_user.profile_pic)
+    if form.validate_on_submit():
+        if form.profile_pic.data:
+            profile_pic_fileName=save_profile_pic(form.profile_pic.data)
+            current_user.profile_pic = profile_pic_fileName
+        db.session.commit()
+        return redirect(url_for('account'))
+    return render_template('account.html', form=form, profile_pic=user_profilePic)

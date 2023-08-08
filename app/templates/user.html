@@ -3,6 +3,8 @@
         <td><img src="{{ user_profilePic }}"></td>
         <td><h1>User: {{ user.username }}</h1></td>
         <td><h1>join in: {{ user.joinDate }}</h1></td>
+        <td><a href="{{ url_for('account') }}">Account Info</a></td>
+        
     </tr>
 </table>
 <hr>

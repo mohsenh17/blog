@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
@@ -28,3 +29,7 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+
+class UpdateAcountForm(FlaskForm):
+    profile_pic = FileField('Update avatar pic', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
+    submit = SubmitField('Update')
