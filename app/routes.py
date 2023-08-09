@@ -101,6 +101,11 @@ def account():
             remove_profile_pic(current_user.profile_pic)
             profile_pic_fileName=save_profile_pic(form.profile_pic.data)
             current_user.profile_pic = profile_pic_fileName
+        current_user.username = form.username.data
+        current_user.email = form.email.data
         db.session.commit()
         return redirect(url_for('account'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data = current_user.email
     return render_template('account.html', form=form, profile_pic=user_profilePic)
