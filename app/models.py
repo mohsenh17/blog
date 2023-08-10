@@ -8,6 +8,14 @@ from app import login
 def load_user(id):
     return User.query.get(int(id))
 
+
+class Follow(db.Model):
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -17,6 +25,19 @@ class User(UserMixin, db.Model):
     joinDate = db.Column(db.DateTime, index=True, default=datetime.utcnow().date()) #user's joining date
     profile_pic = db.Column(db.String(120), default='default_profilePic.jpg')
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    
+    followed = db.relationship('Follow',
+                            foreign_keys=[Follow.follower_id],
+                            backref=db.backref('follower', lazy='joined'),
+                            lazy='dynamic',
+                            cascade='all, delete-orphan')
+    followers = db.relationship('Follow',
+                            foreign_keys=[Follow.followed_id],
+                            backref=db.backref('followed', lazy='joined'),
+                            lazy='dynamic',
+                            cascade='all, delete-orphan')
+    
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -25,6 +46,31 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+    
+    def is_following(self, user):
+        if user.id is None:
+            return False
+        return self.followed.filter_by(
+            followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        if user.id is None:
+            return False
+        return self.followers.filter_by(
+            follower_id=user.id).first() is not None
+    
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+            return True
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+            return True
+    
     
 
 class Post(db.Model):
