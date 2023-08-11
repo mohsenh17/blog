@@ -1,1 +1,1 @@
-creating a blog using Flask
+creating a social media using Flask
