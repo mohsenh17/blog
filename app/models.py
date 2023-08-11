@@ -1,8 +1,9 @@
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from app import login
+
 
 @login.user_loader
 def load_user(id):
@@ -15,6 +16,14 @@ class Follow(db.Model):
     followed_id = db.Column(db.Integer, db.ForeignKey('user.id'),
                             primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+class FollowRequest(db.Model):
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,6 +46,17 @@ class User(UserMixin, db.Model):
                             lazy='dynamic',
                             cascade='all, delete-orphan')
     
+    sentFollowRequest = db.relationship('FollowRequest',
+                            foreign_keys=[FollowRequest.follower_id],
+                            backref=db.backref('sentFollowRequest', lazy='joined'),
+                            lazy='dynamic',
+                            cascade='all, delete-orphan')
+    recievedFollowRequest = db.relationship('FollowRequest',
+                            foreign_keys=[FollowRequest.followed_id],
+                            backref=db.backref('recievedFollowRequest', lazy='joined'),
+                            lazy='dynamic',
+                            cascade='all, delete-orphan')
+    
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -53,6 +73,11 @@ class User(UserMixin, db.Model):
         return self.followed.filter_by(
             followed_id=user.id).first() is not None
 
+    def requested_to_follow(self, user):
+        a = self.sentFollowRequest.filter_by(followed_id=user.id).all()
+        print("here hon",a) 
+        return self.sentFollowRequest.filter_by(followed_id=user.id).count() > 0
+
     def is_followed_by(self, user):
         if user.id is None:
             return False
@@ -61,9 +86,26 @@ class User(UserMixin, db.Model):
     
     def follow(self, user):
         if not self.is_following(user):
-            f = Follow(follower=self, followed=user)
-            db.session.add(f)
-            return True
+            if not self.privacy:
+                f = Follow(follower=self, followed=user)
+                db.session.add(f)
+            else:
+                f=FollowRequest(sentFollowRequest=self, recievedFollowRequest=user)
+                db.session.add(f)
+
+    def followResponse(self, user, follow_response):
+        if not self.is_following(user):
+            if follow_response:
+                f = Follow(followed=self, follower=user)
+                db.session.add(f)
+            f = self.recievedFollowRequest.filter_by(follower_id=user.id).first() #need change
+            print(f)
+            db.session.delete(f)
+        
+    def cancel_follow_request(self,user):
+        f = self.sentFollowRequest.filter_by(follower_id=current_user.id).first() #need change
+        db.session.delete(f)
+
 
     def unfollow(self, user):
         f = self.followed.filter_by(followed_id=user.id).first()

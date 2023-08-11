@@ -49,5 +49,14 @@ class UpdateAcountForm(FlaskForm):
             user = User.query.filter_by(email=email.data).first()
             if user:
                 raise ValidationError('That email is taken. Please choose a different one.')
+
 class EmptyForm(FlaskForm):
     submit = SubmitField('Submit')
+
+class FollowResponseForm(FlaskForm):
+    username = StringField('Username',
+                           validators=[DataRequired(), Length(min=1, max=20)])
+    follow_response = BooleanField('accept')
+    submit = SubmitField('Submit')
+    
+    

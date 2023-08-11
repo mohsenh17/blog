@@ -12,12 +12,21 @@
 <p>{{ user.followers.count() }} followers, {{ user.followed.count() }} following.</p>
 {% if user != current_user  %}
     {% if not current_user.is_following(user) %}
-        <p>
-            <form action="{{ url_for('follow', username=user.username) }}" method="post">
-                {{ form.hidden_tag() }}
-                {{ form.submit(value='Follow') }}
-            </form>
-        </p>
+        {% if not current_user.requested_to_follow(user) %}
+            <p>
+                <form action="{{ url_for('follow', username=user.username) }}" method="post">
+                    {{ form.hidden_tag() }}
+                    {{ form.submit(value='Follow') }}
+                </form>
+            </p>
+        {% else %}
+            <p>
+                <form action="{{ url_for('unfollow', username=user.username) }}" method="post">
+                    {{ form.hidden_tag() }}
+                    {{ form.submit(value='cancel request') }}
+                </form>
+            </p>
+        {% endif %}
     {% else %}
     <p>
         <form action="{{ url_for('unfollow', username=user.username) }}" method="post">

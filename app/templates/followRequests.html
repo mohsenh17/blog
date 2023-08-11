@@ -1,0 +1,23 @@
+{% for user in usersRequestedToFollow %}
+<p>
+{{ user.username }}
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username(size=32) }}
+        {% for error in form.username.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.follow_response.label }}<br>
+        {{ form.follow_response(size=32) }}
+        {% for error in form.follow_response.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit() }}</p>
+</form>
+</p>
+{% endfor %}

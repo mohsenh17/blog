@@ -2,10 +2,10 @@ import os
 from flask import render_template, flash, redirect, url_for, request
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, UpdateAcountForm, EmptyForm
+from app.forms import LoginForm, RegistrationForm, UpdateAcountForm, EmptyForm, FollowResponseForm
 import secrets
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
+from app.models import User, FollowRequest
 from PIL import Image
 
 @app.route('/')
@@ -129,6 +129,26 @@ def follow(username):
     else:
         return redirect(url_for('index'))
 
+@app.route('/followRequests/', methods=['GET', 'POST'])
+@login_required
+def followRequests():
+    followRequestsList = FollowRequest.query.filter_by(followed_id=current_user.id).all()
+    usersRequestedToFollow =[] 
+    for item in followRequestsList:
+        usersRequestedToFollow.append(User.query.filter_by(id=item.follower_id).first())
+    print(usersRequestedToFollow)
+    form = FollowResponseForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if form.follow_response.data:
+            if user in usersRequestedToFollow:
+                current_user.followResponse(user, True)
+                #current_user.follow(user)
+                db.session.commit()
+                return redirect(url_for('followRequests'))
+    return render_template('followRequests.html',form=form, usersRequestedToFollow=usersRequestedToFollow)
+
+
 @app.route('/unfollow/<username>', methods=['POST'])
 @login_required
 def unfollow(username):
@@ -141,7 +161,10 @@ def unfollow(username):
         if user == current_user:
             flash('You cannot unfollow yourself!')
             return redirect(url_for('user', username=username))
-        current_user.unfollow(user)
+        if current_user.is_following(user):
+            current_user.unfollow(user)
+        else:
+            current_user.cancel_follow_request(user)
         db.session.commit()
         flash('You are not following {}.'.format(username))
         return redirect(url_for('user', username=username))
