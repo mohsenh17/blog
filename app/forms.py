@@ -52,11 +52,4 @@ class UpdateAcountForm(FlaskForm):
 
 class EmptyForm(FlaskForm):
     submit = SubmitField('Submit')
-
-class FollowResponseForm(FlaskForm):
-    username = StringField('Username',
-                           validators=[DataRequired(), Length(min=1, max=20)])
-    follow_response = BooleanField('accept')
-    submit = SubmitField('Submit')
-    
     

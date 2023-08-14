@@ -2,7 +2,7 @@ import os
 from flask import render_template, flash, redirect, url_for, request
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, UpdateAcountForm, EmptyForm, FollowResponseForm
+from app.forms import LoginForm, RegistrationForm, UpdateAcountForm, EmptyForm
 import secrets
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, FollowRequest
@@ -137,16 +137,31 @@ def followRequests():
     for item in followRequestsList:
         usersRequestedToFollow.append(User.query.filter_by(id=item.follower_id).first())
     print(usersRequestedToFollow)
-    form = FollowResponseForm()
+    form = EmptyForm()
+    return render_template('followRequests.html',form=form, usersRequestedToFollow=usersRequestedToFollow)
+
+@app.route('/followResponse/<username>', methods=['POST'])
+@login_required
+def followResponse(username):
+    user = User.query.filter_by(id=username).first()
+    print(user)
+    followRequestsList = FollowRequest.query.filter_by(followed_id=current_user.id, follower_id=user.id).first()
+    form = EmptyForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if form.follow_response.data:
-            if user in usersRequestedToFollow:
+        print('form', request.form['submit'])
+        #user = User.query.filter_by(username=username).first()
+        if request.form['submit'] == 'accept':
+            if followRequestsList != None:
                 current_user.followResponse(user, True)
                 #current_user.follow(user)
-                db.session.commit()
-                return redirect(url_for('followRequests'))
-    return render_template('followRequests.html',form=form, usersRequestedToFollow=usersRequestedToFollow)
+        elif request.form['submit'] == 'decline':
+            print('declined')
+            current_user.followResponse(user, False)
+        db.session.commit()
+            
+
+    return redirect(url_for('followRequests'))
+    
 
 
 @app.route('/unfollow/<username>', methods=['POST'])
@@ -164,7 +179,10 @@ def unfollow(username):
         if current_user.is_following(user):
             current_user.unfollow(user)
         else:
-            current_user.cancel_follow_request(user)
+            "in else"
+            if current_user.requested_to_follow(user):
+                "in requested"
+                current_user.cancel_follow_request()
         db.session.commit()
         flash('You are not following {}.'.format(username))
         return redirect(url_for('user', username=username))

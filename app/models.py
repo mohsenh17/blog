@@ -74,8 +74,6 @@ class User(UserMixin, db.Model):
             followed_id=user.id).first() is not None
 
     def requested_to_follow(self, user):
-        a = self.sentFollowRequest.filter_by(followed_id=user.id).all()
-        print("here hon",a) 
         return self.sentFollowRequest.filter_by(followed_id=user.id).count() > 0
 
     def is_followed_by(self, user):
@@ -98,12 +96,12 @@ class User(UserMixin, db.Model):
             if follow_response:
                 f = Follow(followed=self, follower=user)
                 db.session.add(f)
-            f = self.recievedFollowRequest.filter_by(follower_id=user.id).first() #need change
+            f = self.recievedFollowRequest.filter_by(follower_id=user.id).first()
             print(f)
             db.session.delete(f)
         
-    def cancel_follow_request(self,user):
-        f = self.sentFollowRequest.filter_by(follower_id=current_user.id).first() #need change
+    def cancel_follow_request(self):
+        f = self.sentFollowRequest.filter_by(follower_id=current_user.id).first()
         db.session.delete(f)
 
 
