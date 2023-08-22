@@ -84,7 +84,7 @@ class User(UserMixin, db.Model):
     
     def follow(self, user):
         if not self.is_following(user):
-            if not self.privacy:
+            if not user.privacy:
                 f = Follow(follower=self, followed=user)
                 db.session.add(f)
             else:

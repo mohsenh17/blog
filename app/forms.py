@@ -36,6 +36,7 @@ class UpdateAcountForm(FlaskForm):
     email = StringField('Email',
                         validators=[DataRequired(), Email()])
     profile_pic = FileField('Update avatar pic', validators=[FileAllowed(['jpeg', 'jpg', 'png'])])
+    privacy = BooleanField('make my account public')
     submit = SubmitField('Update')
     
     def validate_username(self, username):

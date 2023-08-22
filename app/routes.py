@@ -94,6 +94,7 @@ def remove_profile_pic(profile_pic_fn):
 @app.route('/account', methods=['GET', 'POST'])
 @login_required
 def account():
+    print("current_user.privacy", current_user.privacy)
     form = UpdateAcountForm()
     user_profilePic = url_for('static', filename='profile_pics/'+current_user.profile_pic)
     if form.validate_on_submit():
@@ -103,6 +104,9 @@ def account():
             current_user.profile_pic = profile_pic_fileName
         current_user.username = form.username.data
         current_user.email = form.email.data
+        if form.privacy.data:
+            current_user.privacy = not current_user.privacy # private = True, pablic = False
+        print("form.privacy.data", form.privacy.data)
         db.session.commit()
         return redirect(url_for('account'))
     elif request.method == 'GET':

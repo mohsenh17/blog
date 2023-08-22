@@ -21,6 +21,18 @@
             <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </p>
+        <p>
+            {% if current_user.privacy %}
+                {{ form.privacy.label }}<br>
+                {{ form.privacy() }}<br>
+            {% else %}
+            make my account private<br>
+            {{ form.privacy() }}<br>
+            {% endif %}
+
+
+             
+        </p>
         
         <p>
             {{ form.profile_pic.label }}<br>
