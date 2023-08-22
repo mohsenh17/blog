@@ -106,6 +106,18 @@ def account():
         current_user.email = form.email.data
         if form.privacy.data:
             current_user.privacy = not current_user.privacy # private = True, pablic = False
+            if current_user.privacy == False:
+                usersRequestedToFollow = []
+                followRequestsList = FollowRequest.query.filter_by(followed_id=current_user.id).all()
+                for item in followRequestsList:
+                    usersRequestedToFollow.append(User.query.filter_by(id=item.follower_id).first())
+                for requstedUser in usersRequestedToFollow:
+                    print(requstedUser)
+                    current_user.followResponse(requstedUser, True)
+
+    
+
+
         print("form.privacy.data", form.privacy.data)
         db.session.commit()
         return redirect(url_for('account'))
