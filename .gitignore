@@ -16,4 +16,4 @@ build/
 *.jpg
 *.png
 *.jpeg
-
+*.db
