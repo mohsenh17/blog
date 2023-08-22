@@ -112,7 +112,6 @@ def account():
                 for item in followRequestsList:
                     usersRequestedToFollow.append(User.query.filter_by(id=item.follower_id).first())
                 for requstedUser in usersRequestedToFollow:
-                    print(requstedUser)
                     current_user.followResponse(requstedUser, True)
 
     
